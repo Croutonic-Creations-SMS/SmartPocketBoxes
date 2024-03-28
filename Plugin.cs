@@ -30,8 +30,6 @@ namespace SmartPocketBoxes
         private ConfigEntry<bool> consolidateRackFeature;
         private ConfigEntry<KeyboardShortcut> spawnBoxKey;
         private ConfigEntry<bool> autoConsolidate;
-        public ConfigEntry<bool> enableBackpack;
-        public ConfigEntry<KeyboardShortcut> backpackInteract;
 
         public Backpack backpack;
 
@@ -47,11 +45,6 @@ namespace SmartPocketBoxes
                 Harmony.CreateAndPatchAll(typeof(Backpack));
             }
 
-            if(enableBackpack.Value)
-            {
-                Harmony.CreateAndPatchAll(typeof(BackpackRackPatches));
-            }
-
             SceneManager.activeSceneChanged += (Scene s1, Scene s2) =>
             {
                 _interaction = Singleton<PlayerInteraction>.Instance;
@@ -60,7 +53,6 @@ namespace SmartPocketBoxes
                 if(_interaction != null)
                 {
                     _boxInteraction = _interaction.GetComponent<BoxInteraction>();
-
                     backpack = _boxInteraction.GetOrAddComponent<Backpack>();
                 }
             };
@@ -109,20 +101,6 @@ namespace SmartPocketBoxes
                 new KeyboardShortcut(KeyCode.Mouse1),
                 "Use this to spawn an empty box while looking at a product label."
             );
-
-            enableBackpack = Config.Bind(
-                "Features",
-                "Backpack",
-                true,
-                "Essentially a portable storage rack"
-            );
-
-            backpackInteract = Config.Bind(
-                "Keybinds",
-                "Backpack Interact",
-                new KeyboardShortcut(KeyCode.B, new KeyCode[] { KeyCode.LeftControl }),
-                "Use this to interact with backpack. If box in hand, insert. If not, take out."
-            );
         }
 
         private void Update()
@@ -131,12 +109,8 @@ namespace SmartPocketBoxes
 
             if(!backpack.setup)
             {
+                //leave this here to delete the old backpack rack. Will be removed later
                 backpack.Setup(this, Logger);
-                return;
-            }
-
-            if(backpackInteract.Value.IsDown())
-            {
                 return;
             }
 
@@ -180,7 +154,6 @@ namespace SmartPocketBoxes
                 Label aimed_label = GetAimedLabel();
                 if(aimed_label != null & aimed_label.m_RackSlot != null)
                 {
-                    Logger.LogError("test2");
                     ConsolidateRack(aimed_label.m_RackSlot);
                 }
                 return;
@@ -189,13 +162,12 @@ namespace SmartPocketBoxes
 
         public void ConsolidateRack(RackSlot slot)
         {
-            Logger.LogError($"START RACK CONSOLIDATION | {slot.Data.RackedBoxDatas[0].Product.ProductName}");
-
             RackSlotData slot_data = slot.Data;
 
             if (slot_data.RackedBoxDatas.Count == 0) return;
 
             ProductSO slot_product = slot_data.RackedBoxDatas[0].Product;
+            int original_box_count = slot.Data.BoxCount;
             int product_per_box = slot_product.GridLayoutInBox.productCount;
 
             int product_to_consolidate = slot_data.TotalProductCount;
@@ -239,7 +211,7 @@ namespace SmartPocketBoxes
             }
 
             slot.SetLabel();
-            Logger.LogError($"CONSOLIDATED {product_to_consolidate} INTO {boxes_required} BOXES.");
+            Logger.LogInfo($"CONSOLIDATED {product_to_consolidate} {slot.Data.RackedBoxDatas[0].Product.ProductName} IN {original_box_count} BOXES INTO {boxes_required} BOXES.");
         }
         private void ToggleOpenBox(Box box)
         {
@@ -283,7 +255,6 @@ namespace SmartPocketBoxes
 
         private void HandleBoxToBoxTransfer(Box source, Box destination)
         {
-            Logger.LogError("StartBoxTransfer");
             if (source == null || destination == null || !source.IsOpen || !destination.IsOpen || source.Product == null) return;
             if (destination.HasProducts && destination.Product != source.Product) {
                 Singleton<WarningSystem>.Instance.RaiseInteractionWarning(InteractionWarningType.PRODUCTS_MUSTBE_SAME, Array.Empty<string>());
