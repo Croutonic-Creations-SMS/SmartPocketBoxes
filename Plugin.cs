@@ -220,7 +220,7 @@ namespace SmartPocketBoxes
             if (amount_consolidated < 1) return false;
 
             slot.SetLabel();
-            Singleton<SFXManager>.Instance.PlayCheckoutWarningSFX();
+            Singleton<SFXManager>.Instance.PlayPlacingProductSFX();
             Logger.LogError($"FULL RACK CONSOLIDATION] ADDED {amount_consolidated} TO {product.ProductName}");
 
             return true;
