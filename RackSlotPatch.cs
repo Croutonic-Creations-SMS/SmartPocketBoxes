@@ -15,7 +15,7 @@ namespace SmartPocketBoxes
         static bool PlayerPlaceToRackPrefix(BoxInteraction __instance)
         {
             if (!__instance.m_Box.HasProducts) return false;
-            if(__instance.m_Box != null && __instance.m_Box.IsOpen && __instance.m_Box.Data.ProductCount > 0 && __instance.m_CurrentRackSlot.Full)
+            if(__instance.m_Box != null && __instance.m_Box.Data.ProductCount > 0 && __instance.m_CurrentRackSlot.Full)
             {
                 return !(Plugin.Instance.ConsolidateBoxToFullRack(__instance));
             }

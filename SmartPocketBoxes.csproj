@@ -28,6 +28,9 @@
     <Reference Include="Assembly-CSharp" Publicize="true">
       <HintPath>..\..\Supermarket Simulator_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="DOTween">
+      <HintPath>..\..\Supermarket Simulator_Data\Managed\DOTween.dll</HintPath>
+    </Reference>
     <Reference Include="LeanPool">
       <HintPath>..\..\Supermarket Simulator_Data\Managed\LeanPool.dll</HintPath>
     </Reference>

@@ -187,6 +187,7 @@ namespace SmartPocketBoxes
 
             foreach(Box box in slot.m_Boxes.Where(b => !b.Full))
             {
+
                 int space_in_box = box_max_products - box.Data.ProductCount;
                 int amount_to_move = box_to_process.Data.ProductCount;
 
@@ -219,6 +220,7 @@ namespace SmartPocketBoxes
             if (amount_consolidated < 1) return false;
 
             slot.SetLabel();
+            Singleton<SFXManager>.Instance.PlayCheckoutWarningSFX();
             Logger.LogError($"FULL RACK CONSOLIDATION] ADDED {amount_consolidated} TO {product.ProductName}");
 
             return true;
