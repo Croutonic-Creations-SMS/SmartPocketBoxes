@@ -8,8 +8,20 @@ using System.Collections;
 
 namespace SmartPocketBoxes
 {
-    class BoxInteractionPatch
+    class RackSlotPatch
     {
+        [HarmonyPatch(typeof(BoxInteraction), "PlaceBoxToRack")]
+        [HarmonyPrefix]
+        static bool PlayerPlaceToRackPrefix(BoxInteraction __instance)
+        {
+            if (!__instance.m_Box.HasProducts) return false;
+            if(__instance.m_Box != null && __instance.m_Box.IsOpen && __instance.m_Box.Data.ProductCount > 0 && __instance.m_CurrentRackSlot.Full)
+            {
+                return !(Plugin.Instance.ConsolidateBoxToFullRack(__instance));
+            }
+            return true;
+        }
+
         [HarmonyPatch(typeof(RackSlot), "AddBox")]
         [HarmonyPrefix]
         static void Prefix(RackSlot __instance, out RackSlot __state)
