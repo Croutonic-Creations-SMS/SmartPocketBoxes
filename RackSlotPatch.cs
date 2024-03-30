@@ -10,6 +10,17 @@ namespace SmartPocketBoxes
 {
     class RackSlotPatch
     {
+        [HarmonyPatch(typeof(Box), "SpawnProducts")]
+        [HarmonyPrefix]
+        static bool SpawnProductsPrefix(Box __instance)
+        {
+            if (!__instance.HasProducts)
+            {
+                return false;
+            }
+            return true;
+        }
+
         [HarmonyPatch(typeof(BoxInteraction), "PlaceBoxToRack")]
         [HarmonyPrefix]
         static bool PlayerPlaceToRackPrefix(BoxInteraction __instance)
