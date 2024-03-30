@@ -41,8 +41,7 @@ namespace SmartPocketBoxes
 
             if (autoConsolidate.Value)
             {
-                Harmony.CreateAndPatchAll(typeof(BoxInteractionPatch));
-                Harmony.CreateAndPatchAll(typeof(Backpack));
+                Harmony.CreateAndPatchAll(typeof(RackSlotPatch));
             }
 
             SceneManager.activeSceneChanged += (Scene s1, Scene s2) =>
@@ -158,6 +157,73 @@ namespace SmartPocketBoxes
                 }
                 return;
             }
+        }
+
+        public bool ConsolidateBoxToFullRack(BoxInteraction box_interaction)
+        {
+
+            Logger.LogError($"Starting Box To Rack Consolidation");
+
+            RackSlot slot = box_interaction.m_CurrentRackSlot;
+            Box box_to_process = box_interaction.m_Box;
+            ProductSO product = box_to_process.Product;
+
+            int box_max_products = product.GridLayoutInBox.productCount;
+
+            int slot_max_products = box_to_process.m_BoxSO.GridLayout.boxCount * box_max_products;
+            int current_product = slot.Data.TotalProductCount;
+
+            if (current_product == slot_max_products) return false;
+
+            ConsolidateRack(slot);
+            if(!slot.Full)
+            {
+                return false;
+            }
+
+            Logger.LogError($"here");
+
+            int amount_consolidated = 0;
+
+            foreach(Box box in slot.m_Boxes.Where(b => !b.Full))
+            {
+
+                int space_in_box = box_max_products - box.Data.ProductCount;
+                int amount_to_move = box_to_process.Data.ProductCount;
+
+                if (amount_to_move < 1 || space_in_box < 1) continue;
+
+                if(space_in_box < amount_to_move)
+                {
+                    amount_to_move = space_in_box;
+                }
+
+                box_to_process.DespawnProducts();
+
+                box_to_process.Data.ProductCount -= amount_to_move;
+                box.Data.ProductCount += amount_to_move;
+
+                if(box_to_process.IsOpen)
+                {
+                    box_to_process.DespawnProducts();
+                    box_to_process.SpawnProducts();
+                }
+
+                if(box_to_process.Data.ProductCount == 0)
+                {
+                    box_to_process.SetIdle();
+                }
+
+                amount_consolidated += amount_to_move;
+            }
+
+            if (amount_consolidated < 1) return false;
+
+            slot.SetLabel();
+            Singleton<SFXManager>.Instance.PlayPlacingProductSFX();
+            Logger.LogError($"FULL RACK CONSOLIDATION] ADDED {amount_consolidated} TO {product.ProductName}");
+
+            return true;
         }
 
         public void ConsolidateRack(RackSlot slot)

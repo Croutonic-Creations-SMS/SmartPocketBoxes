@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>SmartPocketBoxes</AssemblyName>
     <Description>A mod for Supermarket Simulator with various QOL updates related to boxes.</Description>
-    <Version>1.2.1</Version>
+    <Version>1.3.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -27,6 +27,9 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp" Publicize="true">
       <HintPath>..\..\Supermarket Simulator_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>..\..\Supermarket Simulator_Data\Managed\DOTween.dll</HintPath>
     </Reference>
     <Reference Include="LeanPool">
       <HintPath>..\..\Supermarket Simulator_Data\Managed\LeanPool.dll</HintPath>
