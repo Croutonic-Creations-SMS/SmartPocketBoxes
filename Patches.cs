@@ -8,8 +8,15 @@ using System.Collections;
 
 namespace SmartPocketBoxes
 {
-    class RackSlotPatch
+    class Patches
     {
+        [HarmonyPatch(typeof(PlayerObjectHolder), "ThrowObject")]
+        [HarmonyPostfix]
+        static void PlayerObjectHolderThrowObjectPostfix(PlayerObjectHolder __instance)
+        {
+            Plugin.Instance._boxInteraction.m_Box = null;
+        }
+
         [HarmonyPatch(typeof(Box), "SpawnProducts")]
         [HarmonyPrefix]
         static bool SpawnProductsPrefix(Box __instance)

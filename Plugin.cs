@@ -21,7 +21,7 @@ namespace SmartPocketBoxes
         public static Plugin Instance;
 
         public PlayerInteraction _interaction;
-        private BoxGenerator _boxGenerator;
+        public BoxGenerator _boxGenerator;
         public BoxInteraction _boxInteraction;
 
         private ConfigEntry<KeyboardShortcut> putBoxAwayKey;
@@ -41,7 +41,7 @@ namespace SmartPocketBoxes
 
             if (autoConsolidate.Value)
             {
-                Harmony.CreateAndPatchAll(typeof(RackSlotPatch));
+                Harmony.CreateAndPatchAll(typeof(Patches));
             }
 
             SceneManager.activeSceneChanged += (Scene s1, Scene s2) =>
@@ -110,7 +110,6 @@ namespace SmartPocketBoxes
             {
                 //leave this here to delete the old backpack rack. Will be removed later
                 backpack.Setup(this, Logger);
-                return;
             }
 
             Box held_box = _boxInteraction.m_Box;
@@ -124,9 +123,15 @@ namespace SmartPocketBoxes
                 return;
             }
 
-            if(spawnBoxKey.Value.IsDown() && held_box == null)
+            if(spawnBoxKey.Value.IsDown())
             {
-                SpawnEmptyBoxByLabel(GetAimedLabel());
+                if(held_box != null)
+                {
+                    Logger.LogInfo($"USER IS HOLDING BOX");
+                } else {
+                    Logger.LogInfo($"Attempt Spawn Key Press While Not Holding Box");
+                    SpawnEmptyBoxByLabel(GetAimedLabel());
+                }
                 return;
             }
 
@@ -161,9 +166,6 @@ namespace SmartPocketBoxes
 
         public bool ConsolidateBoxToFullRack(BoxInteraction box_interaction)
         {
-
-            Logger.LogError($"Starting Box To Rack Consolidation");
-
             RackSlot slot = box_interaction.m_CurrentRackSlot;
             Box box_to_process = box_interaction.m_Box;
             ProductSO product = box_to_process.Product;
@@ -180,8 +182,6 @@ namespace SmartPocketBoxes
             {
                 return false;
             }
-
-            Logger.LogError($"here");
 
             int amount_consolidated = 0;
 
@@ -221,7 +221,7 @@ namespace SmartPocketBoxes
 
             slot.SetLabel();
             Singleton<SFXManager>.Instance.PlayPlacingProductSFX();
-            Logger.LogError($"FULL RACK CONSOLIDATION] ADDED {amount_consolidated} TO {product.ProductName}");
+            Logger.LogInfo($"FULL RACK CONSOLIDATION] ADDED {amount_consolidated} TO {product.ProductName}");
 
             return true;
         }
@@ -277,7 +277,7 @@ namespace SmartPocketBoxes
             }
 
             slot.SetLabel();
-            Logger.LogInfo($"CONSOLIDATED {product_to_consolidate} {slot.Data.RackedBoxDatas[0].Product.ProductName} IN {original_box_count} BOXES INTO {boxes_required} BOXES.");
+            Logger.LogInfo($"CONSOLIDATED] {product_to_consolidate} {slot.Data.RackedBoxDatas[0].Product.ProductName} IN {original_box_count} BOXES INTO {boxes_required} BOXES.");
         }
         private void ToggleOpenBox(Box box)
         {
@@ -296,7 +296,11 @@ namespace SmartPocketBoxes
 
         private void SpawnEmptyBoxByLabel(Label label)
         {
-            if (label == null) return;
+            if (label == null)
+            {
+                Logger.LogError($"LABEL IS NULL");
+                return;
+            }
             ProductSO product = null;
             if (label.DisplaySlot == null)
             {
@@ -307,7 +311,11 @@ namespace SmartPocketBoxes
                 product = IDManager.Instance.ProductSO(label.DisplaySlot.ProductID);
             }
 
-            if (product == null) return;
+            if (product == null)
+            {
+                Logger.LogError($"NO PRODUCT FOUND");
+                return;
+            }
 
             BoxData data = new BoxData();
             data.Size = product.GridLayoutInBox.boxSize;
@@ -315,8 +323,12 @@ namespace SmartPocketBoxes
             Box box = _boxGenerator.SpawnBox(new Vector3(0, 0), Quaternion.identity, data);
             Singleton<InventoryManager>.Instance.AddBox(box.Data);
 
+            Logger.LogInfo($"SPAWN BOX");
+
             _interaction.m_CurrentInteractable = box;
             _interaction.Interact();
+
+            Logger.LogInfo($"PLAYER GRAB BOX");
         }
 
         private void HandleBoxToBoxTransfer(Box source, Box destination)
