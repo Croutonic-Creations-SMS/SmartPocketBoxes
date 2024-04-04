@@ -43,18 +43,6 @@ namespace SmartPocketBoxes
             {
                 Harmony.CreateAndPatchAll(typeof(Patches));
             }
-
-            SceneManager.activeSceneChanged += (Scene s1, Scene s2) =>
-            {
-                _interaction = Singleton<PlayerInteraction>.Instance;
-                _boxGenerator = Singleton<BoxGenerator>.Instance;
-
-                if(_interaction != null)
-                {
-                    _boxInteraction = _interaction.GetComponent<BoxInteraction>();
-                    backpack = _boxInteraction.GetOrAddComponent<Backpack>();
-                }
-            };
         }
 
         private void SetupConfigs()
@@ -104,17 +92,25 @@ namespace SmartPocketBoxes
 
         private void Update()
         {
+            if (_interaction != null && _boxGenerator == null)
+            {
+                _boxGenerator = Singleton<BoxGenerator>.Instance;
+                backpack = _boxInteraction.GetOrAddComponent<Backpack>();
+                return;
+            }
+
             if (_interaction == null || _boxGenerator == null) return;
 
             if(!backpack.setup)
             {
+                Logger.LogError($"SETUP BACKPACK");
                 //leave this here to delete the old backpack rack. Will be removed later
                 backpack.Setup(this, Logger);
             }
 
             Box held_box = _boxInteraction.m_Box;
 
-            if (putBoxAwayKey.Value.IsDown() && held_box != null)
+            if (putBoxAwayKey.Value.IsDownInclusive() && held_box != null)
             {
                 if(held_box.Data.Product == null)
                 {
@@ -123,7 +119,7 @@ namespace SmartPocketBoxes
                 return;
             }
 
-            if(spawnBoxKey.Value.IsDown())
+            if(spawnBoxKey.Value.IsDownInclusive())
             {
                 if(held_box != null)
                 {
@@ -147,13 +143,13 @@ namespace SmartPocketBoxes
                 return;
             }
 
-            if(toggleOpenBoxOnFloorKey.Value.IsDown())
+            if(toggleOpenBoxOnFloorKey.Value.IsDownInclusive())
             {
                 ToggleOpenBox(GetAimedBox());
                 return;
             }
             
-            if(consolidateRackFeature.Value == true && consolidateRackKey.Value.IsDown())
+            if(consolidateRackFeature.Value == true && consolidateRackKey.Value.IsDownInclusive())
             {
                 Label aimed_label = GetAimedLabel();
                 if(aimed_label != null & aimed_label.m_RackSlot != null)

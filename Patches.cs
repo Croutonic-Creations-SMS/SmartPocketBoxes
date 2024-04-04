@@ -10,6 +10,14 @@ namespace SmartPocketBoxes
 {
     class Patches
     {
+        [HarmonyPatch(typeof(PlayerInteraction), "Start")]
+        [HarmonyPostfix]
+        static void PlayerInteractionStartPostfix(PlayerInteraction __instance)
+        {
+            Plugin.Instance._interaction = __instance;
+            Plugin.Instance._boxInteraction = __instance.GetComponent<BoxInteraction>();
+        }
+
         [HarmonyPatch(typeof(PlayerObjectHolder), "ThrowObject")]
         [HarmonyPostfix]
         static void PlayerObjectHolderThrowObjectPostfix(PlayerObjectHolder __instance)
