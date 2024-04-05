@@ -5,6 +5,7 @@ using HarmonyLib;
 using UnityEngine;
 using BepInEx;
 using System.Collections;
+using MyBox;
 
 namespace SmartPocketBoxes
 {
@@ -20,9 +21,10 @@ namespace SmartPocketBoxes
 
         [HarmonyPatch(typeof(PlayerObjectHolder), "ThrowObject")]
         [HarmonyPostfix]
-        static void PlayerObjectHolderThrowObjectPostfix(PlayerObjectHolder __instance)
+        static void PlayerObjectHolderThrowObjectPostfix(bool __result)
         {
-            Plugin.Instance._boxInteraction.m_Box = null;
+            if(__result)
+                Plugin.Instance._boxInteraction.m_Box = null;
         }
 
         [HarmonyPatch(typeof(Box), "SpawnProducts")]
