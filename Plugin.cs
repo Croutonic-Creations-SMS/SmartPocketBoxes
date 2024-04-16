@@ -41,8 +41,10 @@ namespace SmartPocketBoxes
 
             if (autoConsolidate.Value)
             {
-                Harmony.CreateAndPatchAll(typeof(Patches));
+                Harmony.CreateAndPatchAll(typeof(ConsolidationPatches));
             }
+
+            Harmony.CreateAndPatchAll(typeof(Patches));
         }
 
         private void SetupConfigs()
